@@ -169,3 +169,24 @@ db.Vampires.find({
     victims: { $lte: 200 }
 }).pretty();
 
+// Replace
+// replace the vampire called 'Claudia' with a vampire called 'Eve'. 'Eve' will have a key called 'portrayed_by' with the value 'Tilda Swinton'
+db.Vampires.update({
+    name: 'Claudia'
+}, {
+    $set: {
+        name: 'Eve',
+        portrayed_by: 'Tilda Swinton'
+    }
+});
+
+// replace the first male vampire with another whose name is 'Guy Man', and who has a key 'is_actually' with the value 'were-lizard'
+db.Vampires.update({
+    gender: 'm'
+}, {
+    $set: {
+        name: 'Guy Man',
+        is_actually: 'were-lizard'
+    }
+});
+
