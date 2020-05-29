@@ -62,3 +62,22 @@ db.Vampires.find({ victims: { $ne: 210234 } }).pretty();
 // have greater than 150 AND fewer than 500 victims
 db.Vampires.find({ victims: { $gt: 150, $lt: 500 } }).pretty();
 
+// Select by exists or does not exist
+// Select all the vampires that:
+// have a key of 'title'
+db.Vampires.find({ title: { $exists: true } }).pretty();
+
+// do not have a key of 'victims'
+db.Vampires.find({ victims: { $exists: false } }).pretty();
+
+// have a title AND no victims
+db.Vampires.find({
+    title: { $exists: true },
+    victims: { $exists: false }
+}).pretty();
+
+// have victims AND the victims they have are greater than 1000
+db.Vampires.find({
+    victims: { $exists: true, $gt: 1000 }
+}).pretty();
+
