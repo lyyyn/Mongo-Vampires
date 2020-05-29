@@ -146,3 +146,26 @@ db.Vampires.find({
     ]
 }).pretty();
 
+// Negative Selection
+// Select all vampires that:
+// love ribbons but do not have brown eyes
+db.Vampires.find({
+    loves: 'ribbons',
+    eye_color: { $ne: 'brown' }
+}).pretty();
+
+// are not from Rome
+db.Vampires.find({
+    location: { $ne: 'Rome' }
+}).pretty();
+
+// do not love any of the following: [fancy cloaks, frilly shirtsleeves, appearing innocent, being tragic, brooding]
+db.Vampires.find({
+    loves: { $nin: ['fancy cloaks', 'frilly shirtsleeves', 'appearing innocent', 'being tragic', 'brooding'] }
+}).pretty();
+
+// have not killed more than 200 people
+db.Vampires.find({
+    victims: { $lte: 200 }
+}).pretty();
+
