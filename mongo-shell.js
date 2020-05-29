@@ -44,3 +44,21 @@ db.Vampires.insertMany([{
     victims: 68687
 }
 ]);
+
+// Select by comparison
+// Write a different query for each of the following:
+// Find all the vampires that that are females
+db.Vampires.find({ gender: 'f' }).pretty();
+
+// have greater than 500 victims
+db.Vampires.find({ victims: { $gt: 500 } }).pretty();
+
+// have fewer than or equal to 150 victims
+db.Vampires.find({ victims: { $lte: 150 } }).pretty();
+
+// have a victim count is not equal to 210234
+db.Vampires.find({ victims: { $ne: 210234 } }).pretty();
+
+// have greater than 150 AND fewer than 500 victims
+db.Vampires.find({ victims: { $gt: 150, $lt: 500 } }).pretty();
+
