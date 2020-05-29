@@ -190,3 +190,58 @@ db.Vampires.update({
     }
 });
 
+// Update
+// Update 'Guy Man' to have a gender of 'f'
+db.Vampires.update({
+    name: 'Guy Man'
+}, {
+    $set: {
+        gender: 'f'
+    }
+});
+
+// Update 'Eve' to have a gender of 'm'
+db.Vampires.update({
+    name: 'Eve'
+}, {
+    $set: {
+        gender: 'm'
+    }
+});
+
+// Update 'Guy Man' to have an array called 'hates' that includes 'clothes' and 'jobs'
+db.Vampires.update({
+    name: 'Guy Man'
+}, {
+    $set: {
+        hates: ['clothes', 'jobs']
+    }
+});
+
+// Update 'Guy Man's' hates array also to include 'alarm clocks' and 'jackalopes'
+db.Vampires.update({
+    name: 'Guy Man'
+}, {
+    $push: {
+        hates: { $each: ['alarm clocks', 'jackalopes'] }
+    }
+});
+
+// Rename 'Eve's' name field to 'moniker'
+db.Vampires.update({
+    name: 'Eve'
+}, {
+    $rename: {
+        name: 'moniker'
+    }
+});
+
+// We now no longer want to categorize female gender as "f", but rather as fems. Update all females so that the they are of gender "fems".
+db.Vampires.updateMany({
+    gender: 'f'
+}, {
+    $set: {
+        gender: 'fems'
+    }
+});
+
