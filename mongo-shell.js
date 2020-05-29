@@ -115,3 +115,34 @@ db.Vampires.find({
     ]
 }).pretty();
 
+// Select objects that match one of several values
+// Select all the vampires that:
+// love either frilly shirtsleeves or frilly collars
+db.Vampires.find({
+    $or: [
+        { loves: 'frilly shirtsleeves' },
+        { loves: 'frilly collars' }
+    ]
+}).pretty();
+
+// love brooding
+db.Vampires.find({ loves: 'brooding' }).pretty();
+
+// love at least one of the following: appearing innocent, trickery, lurking in rotting mansions, R&B music
+db.Vampires.find({
+    $or: [
+        { loves: 'appearing innocent' },
+        { loves: 'trickery' },
+        { loves: 'lurking in rotting mansions' },
+        { loves: 'R&B music' }
+    ]
+}).pretty();
+
+// love fancy cloaks but not if they also love either top hats or virgin blood * Hint-You will also have to use $nin *
+db.Vampires.find({
+    $and: [
+        { loves: 'fancy cloaks' },
+        { loves: { $nin: ['top hats', 'virgin blood'] } }
+    ]
+}).pretty();
+
