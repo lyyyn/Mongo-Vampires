@@ -245,3 +245,13 @@ db.Vampires.updateMany({
     }
 });
 
+// Remove
+// Remove a single document wherein the hair_color is 'brown'
+db.Vampires.deleteOne({
+    hair_color: 'brown'
+});
+
+// We found out that the vampires with the blue eyes were just fakes! Let's remove all the vampires who have blue eyes from our database.
+db.Vampires.deleteMany({
+    eye_color: 'blue'
+});
