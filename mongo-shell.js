@@ -81,3 +81,37 @@ db.Vampires.find({
     victims: { $exists: true, $gt: 1000 }
 }).pretty();
 
+// Select with OR
+// Select all the vampires that:
+// are from New York, New York, US or New Orleans, Louisiana, US
+db.Vampires.find({
+    $or: [
+        { location: 'New York, New York, US' },
+        { location: 'New Orleans, Louisiana, US' }
+    ]
+}).pretty();
+
+// love brooding or being tragic
+db.Vampires.find({
+    $or: [
+        { loves: 'brooding' },
+        { loves: 'being tragic' }
+    ]
+}).pretty();
+
+// have more than 1000 victims or love marshmallows
+db.Vampires.find({
+    $or: [
+        { victims: { $gt: 1000 } },
+        { loves: 'marshmallows' }
+    ]
+}).pretty();
+
+// have red hair or green eyes
+db.Vampires.find({
+    $or: [
+        { hair_color: 'red' },
+        { eye_color: 'green' }
+    ]
+}).pretty();
+
