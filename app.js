@@ -64,6 +64,12 @@ client.connect((err) => {
     console.log('Connected successfully to Mongo server');
 
     const Vampires = client.db(dbName).collection('Vampires');
+    // Drop any previous data
+    Vampires.drop().then(result => {
+        console.log('Collection had been dropped.');
+    }).catch(err => {
+        assert(err, null);
+    });
 
     // Insert seed data
     Vampires.insertMany(seedData, function (err, result) {
