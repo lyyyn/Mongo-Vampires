@@ -18,24 +18,22 @@
 // });
 
 console.log('test1');
+
 async function f() {
-    console.log('test2');
-    let promise = new Promise((resolve, reject) => {
-        console.log('test3');
-        setTimeout(() => resolve("done!"), 1000)
+	console.log('test2');
+	let promise = new Promise((resolve, reject) => {
+		console.log('test3');
+		setTimeout(() => resolve("done!"), 1000)
     });
-
-    console.log('test4');
-    promise.then(res => {
-        console.log(res);
-    });
-
-    console.log('test5');
-
-    // let result = await promise; // wait until the promise resolves (*)
-
-    // alert(result); // "done!"
-};
+    
+	let result = await promise;
+	console.log(result)
+	console.log('test4');
+	// promise.then(res => {
+	// 	console.log(res)
+	// })
+	console.log('test5');
+}
 console.log('test6');
 f();
 console.log('test7');
