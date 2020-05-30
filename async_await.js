@@ -18,22 +18,20 @@
 // });
 
 console.log('test1');
+const fetch = require('node-fetch');
 
 async function f() {
 	console.log('test2');
-	let promise = new Promise((resolve, reject) => {
-		console.log('test3');
-		setTimeout(() => resolve("done!"), 1000)
-    });
     
-	let result = await promise;
+    //to use fetch need to install "npm i node-fetch --save"
+    let response = await fetch("https://swapi.dev/api/people/1");
+    let result = await response.json();
+    
 	console.log(result)
 	console.log('test4');
-	// promise.then(res => {
-	// 	console.log(res)
-	// })
 	console.log('test5');
-}
+};
+
 console.log('test6');
 f();
 console.log('test7');
