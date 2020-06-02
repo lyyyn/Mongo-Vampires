@@ -4,7 +4,6 @@ Set up and Configuration
 // Dependencies
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
-const vampires = require('./models/seed_vampires');
 
 // Connection URL
 const url = 'mongodb://localhost:27017';
@@ -22,7 +21,7 @@ const additional4 = [{
     title: 'Count Dracula',
     hair_color: 'black',
     eye_color: 'black',
-    dob: Date('<1895-01-25>'),
+    dob: new Date('4 Dec 1895 00:00:00 +0800'),
     loves: ['his wife', 'hotel management'],
     location: 'Transylvania',
     gender: 'm',
@@ -32,7 +31,7 @@ const additional4 = [{
     title: 'Duchess of Shrill',
     hair_color: 'gold',
     eye_color: 'green',
-    dob: '1238-5-3',
+    dob: new Date('12 Dec 1238 00:00:00 +0800'),
     loves: ['apple', 'grape'],
     location: 'Washington',
     gender: 'f'
@@ -41,7 +40,7 @@ const additional4 = [{
     title: 'Countess Draculasian',
     hair_color: 'green',
     eye_color: 'green',
-    dob: '768-03-12',
+    dob: new Date('12 Mar 768 00:00:00 +0800'),
     loves: ['drinking blood', 'travel around the world'],
     location: 'Scotland',
     gender: 'f',
@@ -51,189 +50,154 @@ const additional4 = [{
     title: 'Don Juan',
     hair_color: 'black',
     eye_color: 'blue',
-    dob: '247-11-11',
+    dob: new Date('11 Nov 247 00:00:00 +0800'),
     loves: ['women', 'girls', 'pretty stuff'],
     location: 'Paris',
     gender: 'm',
     victims: 68687
 }];
 
+// async await - Linh method (modified)
+async function tryCatch(action, type, message) {
+    try {
+        const docs = await action;
+        if (type === 'find') {
+            message += `, found ${docs.length} documents:`;
+        }
+        console.log(message);
+        if (type === 'find') {
+            console.log(docs);
+        }
+    } catch (err) {
+        assert.equal(err, null);
+    } finally {
+        // client.close();
+    }
+};
+
 // Use connect method to connect to the Server
-client.connect((err) => {
+client.connect(async (err) => { //!!!!!! to convert this whole chunck to async function, then we can use await inside
     assert.equal(null, err);
     console.log('Connected successfully to Mongo server');
 
     const Vampires = client.db(dbName).collection('Vampires');
     // Drop any previous data
-    Vampires.drop().then(result => {
-        console.log('Collection had been dropped.');
-    }).catch(err => {
-        assert(err, null);
-    });
+    await tryCatch(Vampires.drop(), 'drop', `Vampires collection had been dropped`);
 
     // Insert seed data
-    Vampires.insertMany(seedData, function (err, result) {
+    await tryCatch(Vampires.insertMany(seedData, function (err, result) {
         assert.equal(null, err);
         assert.equal(seedData.length, result.insertedCount);
-        // client.close();
-    });
+    }), 'insert', `Insert Vampires seed data`);
 
     // Insert additional 4 draculas
-    Vampires.insertMany(additional4, function (err, result) {
+    await tryCatch(Vampires.insertMany(additional4, function (err, result) {
         assert.equal(null, err);
         assert.equal(additional4.length, result.insertedCount);
-        // client.close();
-    });
+    }), 'insert', `Insert 4 additional Vampires`);
 
-    Vampires.find({}, {
-        projection: {
-            _id: 0
-        }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Searching for all vampires`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+
+    // the first one without the higher function as sample
+    // try {
+    //     const docs = await Vampires.find({}, {
+    //         projection: {
+    //             _id: 0
+    //         }
+    //     }).toArray();
+    //     console.log(`Searching for all vampires, found ${docs.length} documents:`);
+    //     console.log(docs);
+    // } catch {
+    //     assert.equal(null, err);
+    // } finally {
+    //     // client.close();
+    // };
+
 
     // Select by comparison
     // Write a different query for each of the following:
     // Find all the vampires that that are females
-    Vampires.find({ gender: 'f' }, {
+    await tryCatch(Vampires.find({ name: 'Adam Sandler' }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that that are females`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that that are females`);
+
 
     // have greater than 500 victims
-    Vampires.find({ victims: { $gt: 500 } }, {
+    await tryCatch(Vampires.find({ victims: { $gt: 500 } }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have greater than 500 victims`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have greater than 500 victims`);
+
 
     // have fewer than or equal to 150 victims
-    Vampires.find({ victims: { $lte: 150 } }, {
+    await tryCatch(Vampires.find({ victims: { $lte: 150 } }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have fewer than or equal to 150 victims`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have fewer than or equal to 150 victims`);
 
 
     // have a victim count is not equal to 210234
-    Vampires.find({ victims: { $ne: 210234 } }, {
+    await tryCatch(Vampires.find({ victims: { $ne: 210234 } }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampirest that have a victim count is not equal to 210234`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have a victim count is not equal to 210234`);
 
 
     // have greater than 150 AND fewer than 500 victims
-    Vampires.find({ victims: { $gt: 150, $lt: 500 } }, {
+    await tryCatch(Vampires.find({ victims: { $gt: 150, $lt: 500 } }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have greater than 150 AND fewer than 500 victims`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have greater than 150 AND fewer than 500 victims`);
 
 
     // Select by exists or does not exist
     // Select all the vampires that:
     // have a key of 'title'
-    Vampires.find({ title: { $exists: true } }, {
+    await tryCatch(Vampires.find({ title: { $exists: true } }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have a key of 'title'`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have a key of 'title'`);
 
 
     // do not have a key of 'victims'
-    Vampires.find({ victims: { $exists: false } }, {
+    await tryCatch(Vampires.find({ victims: { $exists: false } }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that do not have a key of 'victims'`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that do not have a key of 'victims'`);
 
 
     // have a title AND no victims
-    Vampires.find({
+    await tryCatch(Vampires.find({
         title: { $exists: true },
         victims: { $exists: false }
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have a title AND no victims`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have a title AND no victims`);
 
 
     // have victims AND the victims they have are greater than 1000
-    Vampires.find({
+    await tryCatch(Vampires.find({
         victims: { $exists: true, $gt: 1000 }
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have victims AND the victims they have are greater than 1000`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have victims AND the victims they have are greater than 1000`);
 
 
     // Select with OR
     // Select all the vampires that:
     // are from New York, New York, US or New Orleans, Louisiana, US
-    Vampires.find({
+    await tryCatch(Vampires.find({
         $or: [
             { location: 'New York, New York, US' },
             { location: 'New Orleans, Louisiana, US' }
@@ -242,17 +206,11 @@ client.connect((err) => {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that are from New York, New York, US or New Orleans, Louisiana, US`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that are from New York, New York, US or New Orleans, Louisiana, US`);
 
 
     // love brooding or being tragic
-    Vampires.find({
+    await tryCatch(Vampires.find({
         $or: [
             { loves: 'brooding' },
             { loves: 'being tragic' }
@@ -261,17 +219,11 @@ client.connect((err) => {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that love brooding or being tragic`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that love brooding or being tragic`);
 
 
     // have more than 1000 victims or love marshmallows
-    Vampires.find({
+    await tryCatch(Vampires.find({
         $or: [
             { victims: { $gt: 1000 } },
             { loves: 'marshmallows' }
@@ -280,17 +232,11 @@ client.connect((err) => {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have more than 1000 victims or love marshmallows`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have more than 1000 victims or love marshmallows`);
 
 
     // have red hair or green eyes
-    Vampires.find({
+    await tryCatch(Vampires.find({
         $or: [
             { hair_color: 'red' },
             { eye_color: 'green' }
@@ -299,19 +245,13 @@ client.connect((err) => {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have red hair or green eyes`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have red hair or green eyes`);
 
 
     // Select objects that match one of several values
     // Select all the vampires that:
     // love either frilly shirtsleeves or frilly collars
-    Vampires.find({
+    await tryCatch(Vampires.find({
         $or: [
             { loves: 'frilly shirtsleeves' },
             { loves: 'frilly collars' }
@@ -320,31 +260,19 @@ client.connect((err) => {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that love either frilly shirtsleeves or frilly collars`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that love either frilly shirtsleeves or frilly collars`);
 
 
     // love brooding
-    Vampires.find({ loves: 'brooding' }, {
+    await tryCatch(Vampires.find({ loves: 'brooding' }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that love brooding`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that love brooding`);
 
 
     // love at least one of the following: appearing innocent, trickery, lurking in rotting mansions, R&B music
-    Vampires.find({
+    await tryCatch(Vampires.find({
         $or: [
             { loves: 'appearing innocent' },
             { loves: 'trickery' },
@@ -355,17 +283,11 @@ client.connect((err) => {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that love at least one of the following: appearing innocent, trickery, lurking in rotting mansions, R&B music`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that love at least one of the following: appearing innocent, trickery, lurking in rotting mansions, R&B music`);
 
 
     // love fancy cloaks but not if they also love either top hats or virgin blood * Hint-You will also have to use $nin *
-    Vampires.find({
+    await tryCatch(Vampires.find({
         $and: [
             { loves: 'fancy cloaks' },
             { loves: { $nin: ['top hats', 'virgin blood'] } }
@@ -374,321 +296,241 @@ client.connect((err) => {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that love fancy cloaks but not if they also love either top hats or virgin blood`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that love fancy cloaks but not if they also love either top hats or virgin blood`);
 
 
     // Negative Selection
     // Select all vampires that:
     // love ribbons but do not have brown eyes
-    Vampires.find({
+    await tryCatch(Vampires.find({
         loves: 'ribbons',
         eye_color: { $ne: 'brown' }
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that love ribbons but do not have brown eyes`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that love ribbons but do not have brown eyes`);
 
 
     // are not from Rome
-    Vampires.find({
+    await tryCatch(Vampires.find({
         location: { $ne: 'Rome' }
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that are not from Rome`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that are not from Rome`);
 
 
     // do not love any of the following: [fancy cloaks, frilly shirtsleeves, appearing innocent, being tragic, brooding]
-    Vampires.find({
+    await tryCatch(Vampires.find({
         loves: { $nin: ['fancy cloaks', 'frilly shirtsleeves', 'appearing innocent', 'being tragic', 'brooding'] }
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that do not love any of the following: [fancy cloaks, frilly shirtsleeves, appearing innocent, being tragic, brooding]`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that do not love any of the following: [fancy cloaks, frilly shirtsleeves, appearing innocent, being tragic, brooding]`);
 
 
     // have not killed more than 200 people
-    Vampires.find({
+    await tryCatch(Vampires.find({
         victims: { $lte: 200 }
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires that have not killed more than 200 people`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires that have not killed more than 200 people`);
 
 
-    // Replace
-    // replace the vampire called 'Claudia' with a vampire called 'Eve'. 'Eve' will have a key called 'portrayed_by' with the value 'Tilda Swinton'
-    Vampires.update({
+    // // Replace
+    // // replace the vampire called 'Claudia' with a vampire called 'Eve'. 'Eve' will have a key called 'portrayed_by' with the value 'Tilda Swinton'
+    await tryCatch(Vampires.update({
         name: 'Claudia'
     }, {
         $set: {
             name: 'Eve',
             portrayed_by: 'Tilda Swinton'
         }
-    });
-    Vampires.find({
+    }), 'update', `Update Claudia to Eve, add portrayed_by: 'Tilda Swinton'`);
+
+    await tryCatch(Vampires.find({
         name: 'Eve'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the update for Eve`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the update for Eve`);
 
 
     // replace the first male vampire with another whose name is 'Guy Man', and who has a key 'is_actually' with the value 'were-lizard'
-    Vampires.update({
+    await tryCatch(Vampires.update({
         gender: 'm'
     }, {
         $set: {
             name: 'Guy Man',
             is_actually: 'were-lizard'
         }
-    });
-    Vampires.find({
+    }), 'update', `Update first gender m, name change to Guy Man, add is_actually: 'were-lizard'`);
+
+    await tryCatch(Vampires.find({
         name: 'Guy Man'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the update for Guy Man`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the update for Guy Man`);
 
 
     // Update
     // Update 'Guy Man' to have a gender of 'f'
-    Vampires.update({
+    await tryCatch(Vampires.update({
         name: 'Guy Man'
     }, {
         $set: {
             gender: 'f'
         }
-    });
-    Vampires.find({
+    }), 'update', `Update Guy Man gender to f`);
+
+    await tryCatch(Vampires.find({
         name: 'Guy Man'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the gender update for Guy Man to f`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the gender update for Guy Man to f`);
 
 
     // Update 'Eve' to have a gender of 'm'
-    Vampires.update({
+    await tryCatch(Vampires.update({
         name: 'Eve'
     }, {
         $set: {
             gender: 'm'
         }
-    });
-    Vampires.find({
+    }), 'update', `Update Eve gender to m`);
+
+    await tryCatch(Vampires.find({
         name: 'Eve'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the gender update for Eve to m`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the update for Eve gender to m`);
 
 
     // Update 'Guy Man' to have an array called 'hates' that includes 'clothes' and 'jobs'
-    Vampires.update({
+    await tryCatch(Vampires.update({
         name: 'Guy Man'
     }, {
         $set: {
             hates: ['clothes', 'jobs']
         }
-    });
-    Vampires.find({
+    }), 'update', `Update Guy Man gender to f`);
+
+    await tryCatch(Vampires.find({
         name: 'Guy Man'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the update for Guy Man for hates`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the update for Guy Man for hates`);
 
 
     // Update 'Guy Man's' hates array also to include 'alarm clocks' and 'jackalopes'
-    Vampires.update({
+    await tryCatch(Vampires.update({
         name: 'Guy Man'
     }, {
         $push: {
             hates: { $each: ['alarm clocks', 'jackalopes'] }
         }
-    });
-    Vampires.find({
+    }), 'update', `Update Guy Man gender to f`);
+
+    await tryCatch(Vampires.find({
         name: 'Guy Man'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the update for Guy Man for hates`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the update for Guy Man for hates`);
 
 
     // Rename 'Eve's' name field to 'moniker'
-    Vampires.update({
+    await tryCatch(Vampires.update({
         name: 'Eve'
     }, {
         $rename: {
             name: 'moniker'
         }
-    });
-    Vampires.find({
-        name: 'moniker'
+    }), 'update', `Rename name label for Eve to moniker`);
+
+    await tryCatch(Vampires.find({
+        moniker: 'Eve'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the moniker update for Eve`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the update for Eve name label to moniker`);
 
 
     // We now no longer want to categorize female gender as "f", but rather as fems. Update all females so that the they are of gender "fems".
-    Vampires.updateMany({
+    await tryCatch(Vampires.updateMany({
         gender: 'f'
     }, {
         $set: {
             gender: 'fems'
         }
-    });
-    Vampires.find({
+    }), 'update', `Update all gender f to fems`);
+
+    await tryCatch(Vampires.find({
         gender: 'fems'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Confirm the update for Guy Man for hates`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Confirm the update of all gender f to fems`);
 
 
     // Remove
     // Remove a single document wherein the hair_color is 'brown'
-    Vampires.find({
+    await tryCatch(Vampires.find({
         hair_color: 'brown'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires with brown hair before deleteOne`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
-    Vampires.deleteOne({
+    }).toArray(), 'find', `Vampires with brown hair before deleteOne`);
+
+    await tryCatch(Vampires.deleteOne({
         hair_color: 'brown'
-    });
-    Vampires.find({
+    }), 'delete', `Delete one vampire with brown hair`);
+
+    await tryCatch(Vampires.find({
         hair_color: 'brown'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires with brown hair after deleteOne`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        // client.close();
-    });
+    }).toArray(), 'find', `Vampires with brown hair after deleteOne`);
 
 
     // We found out that the vampires with the blue eyes were just fakes! Let's remove all the vampires who have blue eyes from our database.
-    Vampires.deleteMany({
+    await tryCatch(Vampires.deleteMany({
         eye_color: 'blue'
-    });
-    Vampires.find({
+    }), 'delete', `Delete all vampires with blue eyes`);
+
+    await tryCatch(Vampires.find({
         eye_color: 'blue'
     }, {
         projection: {
             _id: 0
         }
-    }).toArray((err, docs) => {
-        assert.equal(err, null);
-        console.log(`Vampires with blue eyes after deleteMany`);
-        console.log(`Found the ${docs.length} documents:`);
-        console.log(docs);
-        client.close();
-    });
+    }).toArray(), 'find', `Vampires with blue eyes after deleteMany`);
+
+    //after all completed
+    client.close();
 });
+
+
 
 
 
